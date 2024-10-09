@@ -12,11 +12,10 @@ import org.springframework.stereotype.Service;
 import usfca.pyne.cs601.virtualfridge.Model.Recipe;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class RecipeService implements RecipeServiceInterface {
+public class RecipeService {
 
     private final ChatLanguageModel chatLanguageModel;
 
