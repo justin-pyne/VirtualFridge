@@ -1,15 +1,13 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
 public class Recipe {
-    @Getter
     private String name;
-    @Getter
     private String description;
-    @Getter
     private String preparationTime;
 
 
@@ -19,12 +17,30 @@ public class Recipe {
 
     public Recipe(){}
 
-    public Recipe(String name, String description, String preparationTime, List<Ingredient> ingredients, List<String> instructions) {
+    @JsonCreator
+    public Recipe(
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("preparationTime") String preparationTime,
+            @JsonProperty("ingredients") List<Ingredient> ingredients,
+            @JsonProperty("instructions") List<String> instructions) {
         this.name = name;
         this.description = description;
         this.preparationTime = preparationTime;
         this.ingredients = ingredients;
         this.instructions = instructions;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getPreparationTime() {
+        return preparationTime;
     }
 
     public List<Ingredient> getIngredients() {

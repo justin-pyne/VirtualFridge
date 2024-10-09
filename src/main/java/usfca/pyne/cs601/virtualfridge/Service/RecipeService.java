@@ -23,7 +23,7 @@ public class RecipeService {
         this.chatLanguageModel = chatLanguageModel;
     }
 
-    public String generateRecipe(String ingredients){
+    public List<Recipe> generateRecipe(String ingredients){
         CreateRecipePrompt createRecipePrompt = new CreateRecipePrompt();
         createRecipePrompt.ingredients = ingredients;
         createRecipePrompt.numberOfRecipes = 5;
@@ -33,11 +33,11 @@ public class RecipeService {
             System.out.println("Querying the api...");
             AiMessage aiMessage = chatLanguageModel.generate(prompt.toUserMessage()).content();
             String aiString = aiMessage.text();
-            return extractJson(aiString);
+            return parseResponseToRecipes(extractJson(aiString));
         } catch (Exception e) {
             System.out.println(e);
         }
-        return ("Failed to fetch response.");
+        return null;
     }
 
     private String extractJson(String response){
@@ -49,7 +49,7 @@ public class RecipeService {
         return response.substring(startIndex, endIndex + 1).trim();
     }
 
-    public List<Recipe> parseResponseToRecipes(String json) {
+    private List<Recipe> parseResponseToRecipes(String json) {
         Gson gson = new Gson();
         Type recipeListType = new TypeToken<List<Recipe>>() {}.getType();
         try {

@@ -22,7 +22,8 @@ public class RecipeController {
 
     @PostMapping("/ingredients")
     public ResponseEntity<List<Recipe>> getRecipes(@RequestBody String ingredients){
-        return ResponseEntity.ok().body(recipeService.parseResponseToRecipes(recipeService.generateRecipe(ingredients)));
+        List<Recipe> recipes = recipeService.generateRecipe(ingredients);
+        return ResponseEntity.ok().body(recipes);
     }
 
 }

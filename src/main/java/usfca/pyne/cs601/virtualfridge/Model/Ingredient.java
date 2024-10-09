@@ -1,5 +1,8 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Ingredient {
 
     private String name;
@@ -7,9 +10,11 @@ public class Ingredient {
     private String unit;
 
 
-    public Ingredient() {}
-
-    public Ingredient(String name, double amount, String unit) {
+    @JsonCreator
+    public Ingredient(
+            @JsonProperty("name") String name,
+            @JsonProperty("amount") double amount,
+            @JsonProperty("unit") String unit) {
         this.name = name;
         this.amount = amount;
         this.unit = unit;
