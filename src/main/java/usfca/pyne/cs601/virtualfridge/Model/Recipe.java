@@ -1,16 +1,25 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
+import lombok.Getter;
+
 import java.util.List;
 
 public class Recipe {
+    @Getter
     private String name;
+    @Getter
     private String description;
+    @Getter
     private String preparationTime;
-    private List<String> ingredients;
+
+
+    private List<Ingredient> ingredients;
     private List<String> instructions;
 
 
-    public Recipe(String name, String description, String preparationTime, List<String> ingredients, List<String> instructions) {
+    public Recipe(){}
+
+    public Recipe(String name, String description, String preparationTime, List<Ingredient> ingredients, List<String> instructions) {
         this.name = name;
         this.description = description;
         this.preparationTime = preparationTime;
@@ -18,11 +27,7 @@ public class Recipe {
         this.instructions = instructions;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public List<String> getIngredients() {
+    public List<Ingredient> getIngredients() {
         return List.copyOf(ingredients);
     }
 
@@ -30,11 +35,15 @@ public class Recipe {
         return List.copyOf(instructions);
     }
 
-    public String getDescription() {
-        return description;
-    }
 
-    public String getPreparationTime() {
-        return preparationTime;
+    @Override
+    public String toString() {
+        return "Recipe{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", preparationTime='" + preparationTime + '\'' +
+                ", ingredients=" + ingredients +
+                ", instructions=" + instructions +
+                '}';
     }
 }
