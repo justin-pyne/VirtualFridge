@@ -1,12 +1,17 @@
 package usfca.pyne.cs601.virtualfridge.Service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.input.Prompt;
 import dev.langchain4j.model.input.structured.StructuredPrompt;
 import dev.langchain4j.model.input.structured.StructuredPromptProcessor;
 import org.springframework.stereotype.Service;
+import usfca.pyne.cs601.virtualfridge.Model.Recipe;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,18 +34,41 @@ public class RecipeService implements RecipeServiceInterface {
             System.out.println("Querying the api...");
             AiMessage aiMessage = chatLanguageModel.generate(prompt.toUserMessage()).content();
             String aiString = aiMessage.text();
-            return aiString;
+            return extractJson(aiString);
         } catch (Exception e) {
             System.out.println(e);
         }
         return ("Failed to fetch response.");
     }
 
+    private String extractJson(String response){
+        int startIndex = response.indexOf('[');
+        int endIndex = response.lastIndexOf(']');
+        if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex){
+            throw new IllegalStateException("No valid JSON array found in the response.");
+        }
+        return response.substring(startIndex, endIndex + 1).trim();
+    }
+
+    public List<Recipe> parseResponseToRecipes(String json) {
+        Gson gson = new Gson();
+        Type recipeListType = new TypeToken<List<Recipe>>() {}.getType();
+        try {
+            List<Recipe> recipes = gson.fromJson(json, recipeListType);
+            return recipes;
+        } catch (JsonSyntaxException e){
+            System.out.println("Failed to parse JSON: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 
     @StructuredPrompt({
             "Create {{numberOfRecipes}} recipes that can be prepared using the following ingredients: {{ingredients}}.",
             "",
-            "You do not need to use all of the ingredients, just generate the best possible recipes.",
+            "You do not need to use all of the ingredients. Do not add ingredients that are not listed. Just generate the best possible recipes.",
             "Return the recipes in JSON format as an array, with the following fields for each recipe:",
             "- name (string)",
             "- description (string)",
@@ -78,7 +106,9 @@ public class RecipeService implements RecipeServiceInterface {
             "- For solid ingredients: 'grams'",
             "- For liquids: 'milliliters'",
             "- For countable items: 'pieces'",
+            "**Important Instructions:**",
             "Ensure that amounts are provided in these units.",
+            "Do not include markdown, explanations, or comments.",
             "Please return only valid JSON and no additional text."
     })
     static class CreateRecipePrompt{
