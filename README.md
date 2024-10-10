@@ -7,7 +7,9 @@ Virtual Fridge is a web application that allows users to input the contents of t
 - **Dynamic Updates**: Ingredients used in recipes are subtracted from your virtual fridge.
 - **User Authentication**: Log in to save your fridge contents and preferences.
 - **Expiration Tracking**: Get reminders and prioritize ingredients nearing their expiration dates.
-- **Recipe History**: Access a history of recipes you've made.
+- **Favorite Recipes**: Favorite and retain recipes that you enjoy for future use.
+- **Maintenance Calorie Calcuator**: Calculate maintenance calories based on body dimensions and set goals.
+- **Macro-nutritional Information**: Get macro-nutritional information on recipes that fit with your goals.
 
 ## Technologies Used
 
