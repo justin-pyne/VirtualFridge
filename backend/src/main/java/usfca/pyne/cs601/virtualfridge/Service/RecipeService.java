@@ -8,24 +8,49 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.input.Prompt;
 import dev.langchain4j.model.input.structured.StructuredPrompt;
 import dev.langchain4j.model.input.structured.StructuredPromptProcessor;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import usfca.pyne.cs601.virtualfridge.Model.Recipe;
+import usfca.pyne.cs601.virtualfridge.Model.Ingredient;
+import usfca.pyne.cs601.virtualfridge.Repository.FavoriteRecipeRepository;
+import usfca.pyne.cs601.virtualfridge.Repository.IngredientRepository;
+import usfca.pyne.cs601.virtualfridge.Repository.RecipeRepository;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RecipeService {
 
+
+    private final IngredientRepository ingredientRepository;
+    private final RecipeRepository recipeRepository;
+    private final FavoriteRecipeRepository favoriteRecipeRepository;
     private final ChatLanguageModel chatLanguageModel;
 
-    public RecipeService (ChatLanguageModel chatLanguageModel){
+    public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel) {
+        this.ingredientRepository = ingredientRepository;
+        this.recipeRepository = recipeRepository;
+        this.favoriteRecipeRepository = favoriteRecipeRepository;
         this.chatLanguageModel = chatLanguageModel;
     }
 
-    public List<Recipe> generateRecipe(String ingredients){
+    public List<Recipe> generateRecipe(){
+        List<Ingredient> fridgeIngredients = ingredientRepository.findAll();
+
+        if (fridgeIngredients.isEmpty()) {
+            throw new IllegalStateException("No ingredients available in the fridge.");
+        }
+
+        List<String> ingredientNames = new ArrayList<>();
+        for (Ingredient ingredient : fridgeIngredients){
+            ingredientNames.add(ingredient.getName());
+        }
+
         CreateRecipePrompt createRecipePrompt = new CreateRecipePrompt();
-        createRecipePrompt.ingredients = ingredients;
+        createRecipePrompt.ingredients = ingredientNames;
         createRecipePrompt.numberOfRecipes = 5;
         Prompt prompt = StructuredPromptProcessor.toPrompt(createRecipePrompt);
 
@@ -33,7 +58,9 @@ public class RecipeService {
             System.out.println("Querying the api...");
             AiMessage aiMessage = chatLanguageModel.generate(prompt.toUserMessage()).content();
             String aiString = aiMessage.text();
-            return parseResponseToRecipes(extractJson(aiString));
+            List<Recipe> recipes = parseResponseToRecipes(extractJson(aiString));
+            recipeRepository.saveAll(recipes);
+            return recipes;
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -111,7 +138,43 @@ public class RecipeService {
             "Please return only valid JSON and no additional text."
     })
     static class CreateRecipePrompt{
-        private String ingredients;
+        private List<String> ingredients;
         private int numberOfRecipes;
+    }
+
+    public Recipe getRecipeById (Long recipeId) {
+        return recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new IllegalArgumentException("Recipe not found with ID: " + recipeId));
+    }
+
+    @Transactional
+    public boolean cookRecipe (Long recipeId) {
+        Optional<Recipe> recipeOpt = recipeRepository.findById(recipeId);
+        if (recipeOpt.isPresent()) {
+            Recipe recipes = recipeOpt.get();
+            for (Ingredient recipeIngredient : recipes.getIngredients()) {
+                String ingredientName = recipeIngredient.getName();
+                double requiredAmount = recipeIngredient.getAmount();
+
+                Optional<Ingredient> optionalFridgeIngredient = ingredientRepository.findByName(ingredientName);
+                if (optionalFridgeIngredient.isPresent()) {
+                    Ingredient fridgeIngredient = optionalFridgeIngredient.get();
+                    if (fridgeIngredient.getAmount() >= requiredAmount) {
+                        fridgeIngredient.setAmount(fridgeIngredient.getAmount() - requiredAmount);
+                        ingredientRepository.save(fridgeIngredient);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isRecipeFavorited(Long recipeId) {
+        return favoriteRecipeRepository.findByRecipeId(recipeId).isPresent();
     }
 }
