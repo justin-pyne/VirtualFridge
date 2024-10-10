@@ -14,7 +14,6 @@ public class FavoriteRecipe {
 
     @OneToOne
     @JoinColumn(name = "recipe_id", unique = true, nullable = false)
-    @NotNull(message = "Recipe is required.")
     private Recipe recipe;
 
     public FavoriteRecipe(){}
