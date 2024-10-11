@@ -10,4 +10,20 @@ import java.util.Optional;
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
     Optional<Ingredient> findByName(String name);
 
+    default boolean deductIngredient(String name, double amount) {
+        Optional<Ingredient> ingredientOpt = findByName(name);
+        if (ingredientOpt.isPresent()) {
+            Ingredient ingredient = ingredientOpt.get();
+            if (ingredient.getAmount() >= amount) {
+                ingredient.setAmount(ingredient.getAmount() - amount);
+                if (ingredient.getAmount() <= 0) {
+                    delete(ingredient);
+                } else {
+                    save(ingredient);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 }
