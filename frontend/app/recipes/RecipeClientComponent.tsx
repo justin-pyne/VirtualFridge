@@ -173,3 +173,115 @@ export default function RecipeClientComponent() {
         }
     };
 
+    return (
+        <div>
+            <button onClick={fetchRecipes}>Get Recipes</button>
+            <button onClick={clearRecipes}>Clear Recipes</button>
+            <button onClick={toggleFavoritesList}>
+                {showFavorites ? 'Hide Favorites' : 'Show Favorites'}
+            </button>
+            <button onClick={toggleIngredientsList}>
+                {showIngredients ? 'Hide Ingredients' : 'Show Ingredients'}
+            </button>
+
+            {message && <p>{message}</p>}
+
+            <div>
+                <ul>
+                    {recipes.map((recipe, index) => (
+                        <li key={index}>
+                            <h3>{recipe.name}</h3>
+                            <p>{recipe.description}</p>
+                            <p>Preparation Time: {recipe.preparationTime}</p>
+                            <h4>Ingredients</h4>
+                            <ul>
+                                {recipe.ingredients.map((ingredient, i) => (
+                                    <li key={i}>
+                                        {ingredient.name}: {ingredient.amount} {ingredient.unit}
+                                    </li>
+                                ))}
+                            </ul>
+                            <h4>Instructions</h4>
+                            <ol>
+                                {recipe.instructions.map((instruction, i) => (
+                                    <li key={i}>{instruction}</li>
+                                ))}
+                            </ol>
+                            <button onClick={() => toggleFavorite(recipe.id)}>
+                                {recipe.isFavorite ? '★ Unfavorite' : '☆ Favorite'}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {showFavorites && (
+                <div>
+                    <h2>Favorite Recipes</h2>
+                    <ul>
+                        {favorites.map((recipe, index) => (
+                            <li key={index}>
+                                <h3>{recipe.name}</h3>
+                                <p>{recipe.description}</p>
+                                <p>Preparation Time: {recipe.preparationTime}</p>
+                                <h4>Ingredients</h4>
+                                <ul>
+                                    {recipe.ingredients.map((ingredient, i) => (
+                                        <li key={i}>
+                                            {ingredient.name}: {ingredient.amount} {ingredient.unit}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <h4>Instructions</h4>
+                                <ol>
+                                    {recipe.instructions.map((instruction, i) => (
+                                        <li key={i}>{instruction}</li>
+                                    ))}
+                                </ol>
+                                <button onClick={() => toggleFavorite(recipe.id)}>
+                                    {recipe.isFavorite ? '★ Unfavorite' : '☆ Favorite'}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {showIngredients && (
+                <div>
+                    <h2>All Ingredients</h2>
+                    <ul>
+                        {ingredients.map((ingredient, index) => (
+                            <li key={index}>
+                                {ingredient.name}: {ingredient.amount} {ingredient.unit}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            <div>
+                <h2>Add Ingredient</h2>
+                <input
+                    type="text"
+                    value={ingredientName}
+                    onChange={(e) => setIngredientName(e.target.value)}
+                    placeholder="Ingredient Name"
+                />
+                <input
+                    type="number"
+                    value={ingredientAmount}
+                    onChange={(e) => setIngredientAmount(e.target.value)}
+                    placeholder="Amount"
+                />
+                <input
+                    type="text"
+                    value={ingredientUnit}
+                    onChange={(e) => setIngredientUnit(e.target.value)}
+                    placeholder="Unit (e.g., grams, cups)"
+                />
+                <button onClick={addIngredient}>Add Ingredient</button>
+            </div>
+        </div>
+    );
+}
