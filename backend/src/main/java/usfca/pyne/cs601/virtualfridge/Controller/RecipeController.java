@@ -1,5 +1,6 @@
 package usfca.pyne.cs601.virtualfridge.Controller;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,8 +9,9 @@ import usfca.pyne.cs601.virtualfridge.Service.RecipeService;
 
 import java.util.List;
 
+@CrossOrigin("http://localhost:3000")
 @RestController
-@RequestMapping("/recipes")
+@RequestMapping("/api/recipes")
 public class RecipeController {
 
     private RecipeService recipeService;
@@ -18,13 +20,15 @@ public class RecipeController {
         this.recipeService = recipeService;
     }
 
-
-    @GetMapping
+    @NotNull
+    @GetMapping("/get")
     public ResponseEntity<List<Recipe>> getGeneratedRecipes(){
+        ResponseEntity.status(HttpStatus.OK).body("Generating new recipes");
         List<Recipe> recipes = recipeService.generateRecipe();
         return ResponseEntity.ok(recipes);
     }
 
+    @NotNull
     @PostMapping("/cook/{recipeId}")
     public ResponseEntity<String> cookRecipe(@PathVariable Long recipeId) {
         boolean success = recipeService.cookRecipe(recipeId);
