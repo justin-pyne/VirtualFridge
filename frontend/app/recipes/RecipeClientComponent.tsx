@@ -30,3 +30,28 @@ export default function RecipeClientComponent() {
     const [ingredientAmount, setIngredientAmount] = useState<number | string>('');
     const [ingredientUnit, setIngredientUnit] = useState('');
 
+    const fetchRecipes = async () => {
+        try {
+            setMessage('Generating new recipes...');
+            setRecipes([]);
+            const response = await fetch('http://localhost:8080/api/recipes/get', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch recipes');
+            }
+
+            const data = await response.json();
+            setRecipes(data.map((recipe: Recipe) => ({ ...recipe, isFavorite: false })));
+
+            setMessage('Generated new recipes!');
+        } catch (error) {
+            console.error(error);
+            setMessage('Error fetching recipes');
+        }
+    };
+
