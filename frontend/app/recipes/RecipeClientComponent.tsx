@@ -120,3 +120,56 @@ export default function RecipeClientComponent() {
         setMessage('Recipes cleared!');
     };
 
+    const toggleFavorite = async (recipeId: number) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/favorites/favorite/${recipeId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update favorite status');
+            }
+
+            const message = await response.text();
+            setMessage(message);
+            setRecipes(recipes.map(recipe =>
+                recipe.id === recipeId ? { ...recipe, isFavorite: !recipe.isFavorite } : recipe
+            ));
+        } catch (error) {
+            console.error(error);
+            setMessage('Error updating favorite status');
+        }
+    };
+
+    const addIngredient = async () => {
+        try {
+            const response = await fetch('http://localhost:8080/api/ingredients/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: ingredientName,
+                    amount: ingredientAmount,
+                    unit: ingredientUnit,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add/update ingredient');
+            }
+
+            const result = await response.json();
+            setMessage(`Ingredient ${result.name} successfully added!`);
+            setIngredientName('');
+            setIngredientAmount('');
+            setIngredientUnit('');
+        } catch (error) {
+            console.error(error);
+            setMessage('Error adding/updating ingredient');
+        }
+    };
+
