@@ -101,3 +101,22 @@ export default function RecipeClientComponent() {
         }
     };
 
+    const toggleIngredientsList = () => {
+        if (!showIngredients) {
+            fetchAllIngredients();
+        }
+        setShowIngredients(!showIngredients);
+    };
+
+    const toggleFavoritesList = () => {
+        if (!showFavorites) {
+            fetchFavoriteRecipes();
+        }
+        setShowFavorites(!showFavorites);
+    };
+
+    const clearRecipes = () => {
+        setRecipes([]);
+        setMessage('Recipes cleared!');
+    };
+
