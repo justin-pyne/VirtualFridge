@@ -19,3 +19,14 @@ export default function RecipeClientComponent() {
         isFavorite: boolean;
     }
 
+    const [recipes, setRecipes] = useState<Recipe[]>([]);
+    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+    const [favorites, setFavorites] = useState<Recipe[]>([]);
+    const [showIngredients, setShowIngredients] = useState(false);
+    const [showFavorites, setShowFavorites] = useState(false);
+    const [message, setMessage] = useState('');
+
+    const [ingredientName, setIngredientName] = useState('');
+    const [ingredientAmount, setIngredientAmount] = useState<number | string>('');
+    const [ingredientUnit, setIngredientUnit] = useState('');
+
