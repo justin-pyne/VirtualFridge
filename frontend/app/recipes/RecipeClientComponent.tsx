@@ -55,3 +55,26 @@ export default function RecipeClientComponent() {
         }
     };
 
+    const fetchAllIngredients = async () => {
+        try {
+            setMessage('Fetching ingredients...');
+            const response = await fetch('http://localhost:8080/api/ingredients/get', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch ingredients');
+            }
+
+            const data = await response.json();
+            setIngredients(data);
+            setMessage('Fetched all ingredients');
+        } catch (error) {
+            console.error(error);
+            setMessage('Error fetching ingredients');
+        }
+    };
+
