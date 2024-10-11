@@ -78,3 +78,26 @@ export default function RecipeClientComponent() {
         }
     };
 
+    const fetchFavoriteRecipes = async () => {
+        try {
+            setMessage('Fetching favorite recipes...');
+            const response = await fetch('http://localhost:8080/api/favorites/get', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch favorite recipes');
+            }
+
+            const data = await response.json();
+            setFavorites(data.map((recipe: Recipe) => ({ ...recipe, isFavorite: true })));
+            setMessage('Fetched favorite recipes');
+        } catch (error) {
+            console.error(error);
+            setMessage('Error fetching favorite recipes');
+        }
+    };
+
