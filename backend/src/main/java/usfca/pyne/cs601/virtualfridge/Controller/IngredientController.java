@@ -1,5 +1,6 @@
 package usfca.pyne.cs601.virtualfridge.Controller;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import usfca.pyne.cs601.virtualfridge.Model.Ingredient;
@@ -7,8 +8,9 @@ import usfca.pyne.cs601.virtualfridge.Service.IngredientService;
 
 import java.util.List;
 
+@CrossOrigin("http://localhost:3000")
 @RestController
-@RequestMapping("/fridge")
+@RequestMapping("/api/ingredients")
 public class IngredientController {
 
     private final IngredientService ingredientService;
@@ -17,19 +19,25 @@ public class IngredientController {
         this.ingredientService = ingredientService;
     }
 
-    @GetMapping("/ingredients")
+    @NotNull
+    @GetMapping("/get")
     public ResponseEntity<List<Ingredient>> getAllIngredients(){
         List<Ingredient> ingredients = ingredientService.getAllIngredients();
         return ResponseEntity.ok(ingredients);
     }
 
-    @PostMapping("/ingredients")
+    @NotNull
+    @PostMapping("/add")
     public ResponseEntity<Ingredient> addOrUpdateIngredient(@RequestBody Ingredient ingredient){
-        Ingredient addedIngredient = ingredientService.addOrUpdateIngredient(ingredient);
-        return ResponseEntity.ok(addedIngredient);
+//        if (ingredient != null) {
+            Ingredient addedIngredient = ingredientService.addOrUpdateIngredient(ingredient);
+            return ResponseEntity.ok(addedIngredient);
+//        }
+//        return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/ingredients/{id}")
+    @NotNull
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteIngredient(@PathVariable Long id) {
         ingredientService.removeIngredient(id);
         return ResponseEntity.noContent().build();
