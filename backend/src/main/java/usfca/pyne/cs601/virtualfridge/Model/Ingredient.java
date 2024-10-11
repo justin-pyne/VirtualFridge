@@ -26,7 +26,7 @@ public class Ingredient {
             @JsonProperty("name") String name,
             @JsonProperty("amount") double amount,
             @JsonProperty("unit") String unit) {
-        this.name = name;
+        this.name = name.toLowerCase();
         this.amount = amount;
         this.unit = unit;
     }

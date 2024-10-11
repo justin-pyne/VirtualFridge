@@ -22,15 +22,12 @@ public class Recipe {
 
     private String preparationTime;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinTable(
-            name = "recipe_ingredients",
-            joinColumns = @JoinColumn(name = "recipe_id"),
-            inverseJoinColumns = @JoinColumn(name = "ingredient_id")
-    )
-    private List<Ingredient> ingredients;
+    @ElementCollection
+    @CollectionTable(name = "recipe_ingredients", joinColumns  = @JoinColumn(name = "recipe_id"))
+    private List<RecipeIngredient> ingredients;
 
     @ElementCollection
+    @CollectionTable(name = "recipe_instructions", joinColumns = @JoinColumn(name = "recipe_id"))
     private List<String> instructions;
 
 
@@ -41,7 +38,7 @@ public class Recipe {
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("preparationTime") String preparationTime,
-            @JsonProperty("ingredients") List<Ingredient> ingredients,
+            @JsonProperty("ingredients") List<RecipeIngredient> ingredients,
             @JsonProperty("instructions") List<String> instructions) {
         this.name = name;
         this.description = description;
@@ -62,7 +59,7 @@ public class Recipe {
         return preparationTime;
     }
 
-    public List<Ingredient> getIngredients() {
+    public List<RecipeIngredient> getIngredients() {
         return List.copyOf(ingredients);
     }
 
@@ -90,7 +87,7 @@ public class Recipe {
         this.preparationTime = preparationTime;
     }
 
-    public void setIngredients(List<Ingredient> ingredients) {
+    public void setIngredients(List<RecipeIngredient> ingredients) {
         this.ingredients = ingredients;
     }
 
