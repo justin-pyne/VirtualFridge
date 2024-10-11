@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import usfca.pyne.cs601.virtualfridge.Model.Recipe;
 import usfca.pyne.cs601.virtualfridge.Model.Ingredient;
+import usfca.pyne.cs601.virtualfridge.Model.RecipeIngredient;
 import usfca.pyne.cs601.virtualfridge.Repository.FavoriteRecipeRepository;
 import usfca.pyne.cs601.virtualfridge.Repository.IngredientRepository;
 import usfca.pyne.cs601.virtualfridge.Repository.RecipeRepository;
@@ -29,6 +30,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final FavoriteRecipeRepository favoriteRecipeRepository;
     private final ChatLanguageModel chatLanguageModel;
+
 
     public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel) {
         this.ingredientRepository = ingredientRepository;
@@ -59,6 +61,7 @@ public class RecipeService {
             AiMessage aiMessage = chatLanguageModel.generate(prompt.toUserMessage()).content();
             String aiString = aiMessage.text();
             List<Recipe> recipes = parseResponseToRecipes(extractJson(aiString));
+
             recipeRepository.saveAll(recipes);
             return recipes;
         } catch (Exception e) {
@@ -152,27 +155,24 @@ public class RecipeService {
         Optional<Recipe> recipeOpt = recipeRepository.findById(recipeId);
         if (recipeOpt.isPresent()) {
             Recipe recipes = recipeOpt.get();
-            for (Ingredient recipeIngredient : recipes.getIngredients()) {
+            for (RecipeIngredient recipeIngredient : recipes.getIngredients()) {
                 String ingredientName = recipeIngredient.getName();
                 double requiredAmount = recipeIngredient.getAmount();
 
                 Optional<Ingredient> optionalFridgeIngredient = ingredientRepository.findByName(ingredientName);
                 if (optionalFridgeIngredient.isPresent()) {
-                    Ingredient fridgeIngredient = optionalFridgeIngredient.get();
-                    if (fridgeIngredient.getAmount() >= requiredAmount) {
-                        fridgeIngredient.setAmount(fridgeIngredient.getAmount() - requiredAmount);
-                        ingredientRepository.save(fridgeIngredient);
-                    } else {
+                    boolean deducted = ingredientRepository.deductIngredient(ingredientName.toLowerCase(), requiredAmount);
+                    if (!deducted) {
                         return false;
                     }
                 } else {
-                    return false;
+                        return false;
+                    }
                 }
-            }
             return true;
-        }
+            }
         return false;
-    }
+        }
 
     public boolean isRecipeFavorited(Long recipeId) {
         return favoriteRecipeRepository.findByRecipeId(recipeId).isPresent();
