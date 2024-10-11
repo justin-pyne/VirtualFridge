@@ -19,6 +19,7 @@ import usfca.pyne.cs601.virtualfridge.Repository.RecipeRepository;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +46,8 @@ public class RecipeService {
         if (fridgeIngredients.isEmpty()) {
             throw new IllegalStateException("No ingredients available in the fridge.");
         }
+
+//        fridgeIngredients.sort(Comparator.comparing(Ingredient::getExpirationDate));
 
         List<String> ingredientNames = new ArrayList<>();
         for (Ingredient ingredient : fridgeIngredients){
@@ -95,7 +98,7 @@ public class RecipeService {
 
 
     @StructuredPrompt({
-            "Create {{numberOfRecipes}} recipes that can be prepared using the following ingredients: {{ingredients}}.",
+            "Create {{numberOfRecipes}} recipes that can be prepared using the following ingredients, prioritizing ingredients that are closest to their expiration date: {{ingredients}}.",
             "",
             "You do not need to use all of the ingredients. Do not add ingredients that are not listed. Just generate the best possible recipes.",
             "Return the recipes in JSON format as an array, with the following fields for each recipe:",

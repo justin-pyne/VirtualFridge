@@ -26,6 +26,7 @@ public class IngredientService {
             Ingredient existingIngredient = existingIngredientOpt.get();
             existingIngredient.setAmount(existingIngredient.getAmount() + ingredient.getAmount());
             existingIngredient.setUnit(ingredient.getUnit());
+//            existingIngredient.setExpirationDate(ingredient.getExpirationDate());
             return ingredientRepository.save(existingIngredient);
         } else {
             return ingredientRepository.save(ingredient);
