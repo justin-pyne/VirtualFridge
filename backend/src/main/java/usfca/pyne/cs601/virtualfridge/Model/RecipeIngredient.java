@@ -1,14 +1,17 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
 import jakarta.persistence.Embeddable;
+import org.jetbrains.annotations.NotNull;
 
 @Embeddable
 public class RecipeIngredient {
 
+    @NotNull
     private String name;
 
     private double amount;
 
+    @NotNull
     private String unit;
 
     public RecipeIngredient(){}

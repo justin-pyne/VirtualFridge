@@ -3,6 +3,7 @@ package usfca.pyne.cs601.virtualfridge.Model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class Recipe {
     private Long id;
 
     @Column(nullable = false)
+    @NotNull
     private String name;
 
     private String description;
