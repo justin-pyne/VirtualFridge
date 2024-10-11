@@ -1,6 +1,7 @@
 package usfca.pyne.cs601.virtualfridge.Controller;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import usfca.pyne.cs601.virtualfridge.Model.FavoriteRecipe;
@@ -11,8 +12,9 @@ import usfca.pyne.cs601.virtualfridge.Service.RecipeService;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@CrossOrigin("http://localhost:3000")
 @RestController
-@RequestMapping("/favorites")
+@RequestMapping("/api/favorites")
 public class FavoriteRecipeController {
 
     private final FavoriteRecipeService favoriteRecipeService;
@@ -23,7 +25,8 @@ public class FavoriteRecipeController {
         this.recipeService = recipeService;
     }
 
-    @GetMapping
+    @NotNull
+    @GetMapping("/get")
     public ResponseEntity<List<Recipe>> getAllFavoriteRecipes() {
         List<FavoriteRecipe> favoriteRecipes = favoriteRecipeService.getAllFavoriteRecipes();
         List<Recipe> recipes = favoriteRecipes.stream()
@@ -32,19 +35,22 @@ public class FavoriteRecipeController {
         return ResponseEntity.ok(recipes);
     }
 
-    @PostMapping
-    public ResponseEntity<String> addFavoriteRecipe(@RequestParam Long recipeId) {
+    @NotNull
+    @PostMapping("/favorite/{recipeId}")
+    public ResponseEntity<String> addFavoriteRecipe(@PathVariable Long recipeId) {
         boolean isFavorited = favoriteRecipeService.isRecipeFavorited(recipeId);
-        if(isFavorited) {
-            return ResponseEntity.badRequest().body("Recipe is already favorited.");
+        if (isFavorited) {
+            favoriteRecipeService.removeFavoriteRecipe(recipeId);
+            return ResponseEntity.ok("Recipe removed from favorites.");
+        } else {
+            favoriteRecipeService.addFavoriteRecipe(recipeId);
+            return ResponseEntity.ok("Recipe added to favorites.");
         }
-        favoriteRecipeService.addFavoriteRecipe(recipeId);
-        return ResponseEntity.ok("Recipe added to favorites.");
     }
 
-    @DeleteMapping("/{recipeId}")
-    public ResponseEntity<String> removeFavoriteRecipe(@PathVariable Long recipeId) {
-        favoriteRecipeService.removeFavoriteRecipe(recipeId);
-        return ResponseEntity.ok("Recipe removed from favorites.");
-    }
+//    @DeleteMapping("/delete/{recipeId}")
+//    public ResponseEntity<String> removeFavoriteRecipe(@PathVariable Long recipeId) {
+//        favoriteRecipeService.removeFavoriteRecipe(recipeId);
+//        return ResponseEntity.ok("Recipe removed from favorites.");
+//    }
 }
