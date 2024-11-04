@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenAIConfig {
 
-    private Dotenv dotenv = Dotenv.load();
-    private String openAiApiKey = dotenv.get("OPENAI_API_KEY");
+    private final Dotenv dotenv = Dotenv.load();
+    private final String openAiApiKey = dotenv.get("OPENAI_API_KEY");
 
     @Bean
     public ChatLanguageModel chatLanguageModel() {
