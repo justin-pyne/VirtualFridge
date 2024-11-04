@@ -3,25 +3,32 @@ package usfca.pyne.cs601.virtualfridge.Model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 
+@Setter
 @Entity
 @Table(name = "recipes")
 public class Recipe {
 
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Getter
     @Column(nullable = false)
     @NotNull
     private String name;
 
+    @Getter
     private String description;
 
+    @Getter
     private String preparationTime;
 
     @ElementCollection
@@ -37,7 +44,7 @@ public class Recipe {
 
     @JsonCreator
     public Recipe(
-            @JsonProperty("name") String name,
+            @NotNull @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("preparationTime") String preparationTime,
             @JsonProperty("ingredients") List<RecipeIngredient> ingredients,
@@ -49,52 +56,12 @@ public class Recipe {
         this.instructions = instructions;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getPreparationTime() {
-        return preparationTime;
-    }
-
     public List<RecipeIngredient> getIngredients() {
         return List.copyOf(ingredients);
     }
 
     public List<String> getInstructions() {
         return List.copyOf(instructions);
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setPreparationTime(String preparationTime) {
-        this.preparationTime = preparationTime;
-    }
-
-    public void setIngredients(List<RecipeIngredient> ingredients) {
-        this.ingredients = ingredients;
-    }
-
-    public void setInstructions(List<String> instructions) {
-        this.instructions = instructions;
     }
 
     @Override

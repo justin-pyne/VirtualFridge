@@ -1,9 +1,12 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 
+@Getter
 @Entity
 @Table(name = "favorite_recipes")
 public class FavoriteRecipe {
@@ -12,6 +15,7 @@ public class FavoriteRecipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @OneToOne
     @JoinColumn(name = "recipe_id", unique = true, nullable = false)
     private Recipe recipe;
@@ -22,18 +26,6 @@ public class FavoriteRecipe {
         this.recipe = recipe;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-
-    public Recipe getRecipe() {
-        return recipe;
-    }
-
-    public void setRecipe(Recipe recipe) {
-        this.recipe = recipe;
-    }
 
     @Override
     public String toString() {

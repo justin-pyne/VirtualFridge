@@ -1,8 +1,12 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+@Setter
+@Getter
 @Embeddable
 public class RecipeIngredient {
 
@@ -19,30 +23,6 @@ public class RecipeIngredient {
     public RecipeIngredient(String name, double amount, String unit) {
         this.name = name.toLowerCase();
         this.amount = amount;
-        this.unit = unit;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
         this.unit = unit;
     }
 
