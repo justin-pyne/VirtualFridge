@@ -24,15 +24,13 @@ export function DeleteUserDialog({ isOpen, onOpenChange, user, onConfirm }: Dele
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the user
-            {user && ` '${user.firstName} ${user.lastName}' `}
-            and remove their data from our servers.
+            This action cannot be undone. This will permanently delete the user {user && ` '${user.firstName} ${user.lastName}'`}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
-            Delete
+            Delete User
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
