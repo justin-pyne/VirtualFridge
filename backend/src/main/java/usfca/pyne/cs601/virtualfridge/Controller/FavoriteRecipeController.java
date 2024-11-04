@@ -18,11 +18,9 @@ import java.util.stream.Collectors;
 public class FavoriteRecipeController {
 
     private final FavoriteRecipeService favoriteRecipeService;
-    private final RecipeService recipeService;
 
     public FavoriteRecipeController(FavoriteRecipeService favoriteRecipeService, RecipeService recipeService) {
         this.favoriteRecipeService = favoriteRecipeService;
-        this.recipeService = recipeService;
     }
 
     @NotNull
