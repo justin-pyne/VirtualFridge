@@ -1,12 +1,10 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import RecipeClientComponent from './RecipeClientComponent';
+import RecipeClientComponent from '../components/RecipeClientComponent';
 
 export default function RecipePage() {
     return (
         <div>
-            <h1>Recipe Finder</h1>
             <RecipeClientComponent />
         </div>
     )
