@@ -1,7 +1,5 @@
 package usfca.pyne.cs601.virtualfridge;
 
-import java.util.List;
-import usfca.pyne.cs601.virtualfridge.Model.Recipe;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import usfca.pyne.cs601.virtualfridge.Service.RecipeService;
