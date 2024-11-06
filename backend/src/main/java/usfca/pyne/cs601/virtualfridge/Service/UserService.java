@@ -5,16 +5,21 @@ import org.springframework.stereotype.Service;
 import usfca.pyne.cs601.virtualfridge.Entity.UserEntity;
 import usfca.pyne.cs601.virtualfridge.Model.User;
 import usfca.pyne.cs601.virtualfridge.Repository.UserRepository;
+import usfca.pyne.cs601.virtualfridge.Model.Fridge;
+
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService implements UserServiceInterface {
 
     private final UserRepository userRepository;
+    private final FridgeService fridgeService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, FridgeService fridgeService) {
         this.userRepository = userRepository;
+        this.fridgeService = fridgeService;
     }
 
     @Override
@@ -68,6 +73,34 @@ public class UserService implements UserServiceInterface {
             userRepository.save(userEntity);
         }
         return user;
+    }
+
+    public User getUserByEmail(String email) {
+        UserEntity userEntity = userRepository.findByEmail(email).orElse(null);
+        if(userEntity != null) {
+          User user = new User();
+          BeanUtils.copyProperties(userEntity, user);
+          return user;
+        }
+        return null;
+    }
+
+    public UserEntity findOrCreateUser(String email, String username, String firstName, String lastName) {
+        Optional<UserEntity> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            return userOpt.get();
+        } else {
+            UserEntity userEntity = new UserEntity();
+            userEntity.setEmail(email);
+            userEntity.setUsername(username);
+            userEntity.setFirstName(firstName);
+            userEntity.setLastName(lastName);
+
+            Fridge fridge = new Fridge();
+            fridge.setUser(userEntity);
+            userEntity.setFridge(fridge);
+            return userRepository.save(userEntity);
+        }
     }
 
 }
