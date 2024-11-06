@@ -1,15 +1,20 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 @Setter
 @Getter
-@Embeddable
+@Entity
+@Table(name = "recipe_ingredients")
 public class RecipeIngredient {
 
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @NotNull
     private String name;
 
@@ -17,6 +22,10 @@ public class RecipeIngredient {
 
     @NotNull
     private String unit;
+
+    @ManyToOne
+    @JoinColumn(name = "recipe_id", nullable = false)
+    private Recipe recipe;
 
     public RecipeIngredient(){}
 
