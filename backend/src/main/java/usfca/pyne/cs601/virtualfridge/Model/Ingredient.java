@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Setter
 @Getter
 @Entity
-@Table(name = "ingredients")
+@Table(name = "ingredients", uniqueConstraints = @UniqueConstraint(columnNames = {"fridge_id", "name"}))
 public class Ingredient {
 
     @Id
@@ -37,16 +37,21 @@ public class Ingredient {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
     private LocalDate expirationDate;
 
+    @ManyToOne
+    @JoinColumn(name = "fridge_id", nullable = false)
+    private Fridge fridge;
+
 
     @JsonCreator
     public Ingredient(
             @JsonProperty("name") String name,
             @JsonProperty("amount") double amount,
-            @JsonProperty("unit") String unit) {
-//            @JsonProperty("expirationDate") LocalDate expirationDate
+            @JsonProperty("unit") String unit,
+            @JsonProperty("expirationDate") @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy") LocalDate expirationDate) {
         this.name = name.toLowerCase();
         this.amount = amount;
         this.unit = unit;
+        this.expirationDate = expirationDate;
     }
 
     public Ingredient() {
