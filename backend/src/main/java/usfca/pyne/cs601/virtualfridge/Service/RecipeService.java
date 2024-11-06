@@ -47,7 +47,7 @@ public class RecipeService {
             throw new IllegalStateException("No ingredients available in the fridge.");
         }
 
-//        fridgeIngredients.sort(Comparator.comparing(Ingredient::getExpirationDate));
+        fridgeIngredients.sort(Comparator.comparing(Ingredient::getExpirationDate));
 
         List<String> ingredientNames = new ArrayList<>();
         for (Ingredient ingredient : fridgeIngredients){
