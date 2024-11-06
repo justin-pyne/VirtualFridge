@@ -31,8 +31,7 @@ public class Recipe {
     @Getter
     private String preparationTime;
 
-    @ElementCollection
-    @CollectionTable(name = "recipe_ingredients", joinColumns  = @JoinColumn(name = "recipe_id"))
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<RecipeIngredient> ingredients;
 
     @ElementCollection
