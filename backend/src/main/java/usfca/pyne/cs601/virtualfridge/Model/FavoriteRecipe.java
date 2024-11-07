@@ -8,7 +8,7 @@ import usfca.pyne.cs601.virtualfridge.Entity.UserEntity;
 
 @Getter
 @Entity
-@Table(name = "favorite_recipes")
+@Table(name = "favorite_recipes", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "recipe_id"}))
 public class FavoriteRecipe {
 
     @Id
