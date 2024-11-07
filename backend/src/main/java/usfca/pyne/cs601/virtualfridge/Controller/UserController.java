@@ -1,5 +1,6 @@
 package usfca.pyne.cs601.virtualfridge.Controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import usfca.pyne.cs601.virtualfridge.Model.User;
@@ -35,6 +36,15 @@ public class UserController {
         User user;
         user = userService.getUserById(id);
         return ResponseEntity.ok(user);
+    }
+
+    public ResponseEntity<User> getUserByEmail(@PathVariable("email") String email) {
+        User user = userService.getUserByEmail(email);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @DeleteMapping("/{id}")
