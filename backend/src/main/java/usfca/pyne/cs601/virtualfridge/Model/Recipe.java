@@ -51,13 +51,14 @@ public class Recipe {
         this.name = name;
         this.description = description;
         this.preparationTime = preparationTime;
-        if (ingredients != null) {
+        this.ingredients = ingredients;
+        this.instructions = instructions;
+
+        if (this.ingredients != null) {
             for (RecipeIngredient ingredient : ingredients) {
                 ingredient.setRecipe(this);
             }
         }
-        this.ingredients = ingredients;
-        this.instructions = instructions;
     }
 
     public List<RecipeIngredient> getIngredients() {
