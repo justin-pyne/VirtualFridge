@@ -1,6 +1,7 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,6 +33,7 @@ public class Recipe {
     private String preparationTime;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<RecipeIngredient> ingredients;
 
     @ElementCollection
