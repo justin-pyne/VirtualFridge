@@ -30,6 +30,11 @@ public class RecipeIngredient {
     @JsonBackReference
     private Recipe recipe;
 
+    private Double caloriesPer100g;
+    private Double proteinPer100g;
+    private Double carbsPer100g;
+    private Double fatPer100g;
+
     public RecipeIngredient(){}
 
     public RecipeIngredient(String name, double amount, String unit) {
