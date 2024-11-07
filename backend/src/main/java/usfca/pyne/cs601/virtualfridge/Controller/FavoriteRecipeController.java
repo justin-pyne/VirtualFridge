@@ -34,7 +34,7 @@ public class FavoriteRecipeController {
     }
 
     @NotNull
-    @PostMapping("/favorite/{recipeId}")
+    @PostMapping("/favorite")
     public ResponseEntity<String> addFavoriteRecipe(@RequestParam("email") String email,
                                                     @RequestParam("recipeId") Long recipeId) {
         boolean isFavorited = favoriteRecipeService.isRecipeFavorited(email, recipeId);
