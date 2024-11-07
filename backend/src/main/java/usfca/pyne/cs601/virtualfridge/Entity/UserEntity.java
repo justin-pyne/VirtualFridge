@@ -32,6 +32,16 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<FavoriteRecipe> favoriteRecipes;
 
+    private Double dailyCalorieGoal;
+    private Double dailyProteinGoal;
+    private Double dailyCarbGoal;
+    private Double dailyFatGoal;
+
+    private Double currentCalories = 0.0;
+    private Double currentProtein = 0.0;
+    private Double currentCarbs = 0.0;
+    private Double currentFat = 0.0;
+
 
     public UserEntity(long id, String username, String firstName, String lastName, String email) {
         this.id = id;
