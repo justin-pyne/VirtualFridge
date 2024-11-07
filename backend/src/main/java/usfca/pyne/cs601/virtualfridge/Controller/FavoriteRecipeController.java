@@ -19,14 +19,14 @@ public class FavoriteRecipeController {
 
     private final FavoriteRecipeService favoriteRecipeService;
 
-    public FavoriteRecipeController(FavoriteRecipeService favoriteRecipeService, RecipeService recipeService) {
+    public FavoriteRecipeController(FavoriteRecipeService favoriteRecipeService) {
         this.favoriteRecipeService = favoriteRecipeService;
     }
 
     @NotNull
     @GetMapping("/get")
-    public ResponseEntity<List<Recipe>> getAllFavoriteRecipes() {
-        List<FavoriteRecipe> favoriteRecipes = favoriteRecipeService.getAllFavoriteRecipes();
+    public ResponseEntity<List<Recipe>> getAllFavoriteRecipes(@RequestParam("email") String email) {
+        List<FavoriteRecipe> favoriteRecipes = favoriteRecipeService.getAllFavoriteRecipes(email);
         List<Recipe> recipes = favoriteRecipes.stream()
                 .map(FavoriteRecipe::getRecipe)
                 .collect(Collectors.toList());
@@ -35,13 +35,14 @@ public class FavoriteRecipeController {
 
     @NotNull
     @PostMapping("/favorite/{recipeId}")
-    public ResponseEntity<String> addFavoriteRecipe(@PathVariable Long recipeId) {
-        boolean isFavorited = favoriteRecipeService.isRecipeFavorited(recipeId);
+    public ResponseEntity<String> addFavoriteRecipe(@RequestParam("email") String email,
+                                                    @RequestParam("recipeId") Long recipeId) {
+        boolean isFavorited = favoriteRecipeService.isRecipeFavorited(email, recipeId);
         if (isFavorited) {
-            favoriteRecipeService.removeFavoriteRecipe(recipeId);
+            favoriteRecipeService.removeFavoriteRecipe(email, recipeId);
             return ResponseEntity.ok("Recipe removed from favorites.");
         } else {
-            favoriteRecipeService.addFavoriteRecipe(recipeId);
+            favoriteRecipeService.addFavoriteRecipe(email, recipeId);
             return ResponseEntity.ok("Recipe added to favorites.");
         }
     }
