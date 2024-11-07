@@ -100,6 +100,13 @@ public class RecipeService {
         Type recipeListType = new TypeToken<List<Recipe>>() {}.getType();
         try {
             List<Recipe> recipes = gson.fromJson(json, recipeListType);
+            for (Recipe recipe : recipes) {
+                if (recipe.getIngredients() != null) {
+                    for (RecipeIngredient ingredient : recipe.getIngredients()) {
+                        ingredient.setRecipe(recipe);
+                    }
+                }
+            }
             return recipes;
         } catch (JsonSyntaxException e){
             System.out.println("Failed to parse JSON: " + e.getMessage());
