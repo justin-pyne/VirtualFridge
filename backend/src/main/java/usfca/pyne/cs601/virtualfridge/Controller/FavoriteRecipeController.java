@@ -1,6 +1,7 @@
 package usfca.pyne.cs601.virtualfridge.Controller;
 
 
+import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,7 @@ public class FavoriteRecipeController {
 
     @NotNull
     @PostMapping("/favorite")
+    @Transactional
     public ResponseEntity<String> addFavoriteRecipe(@RequestParam("email") String email,
                                                     @RequestParam("recipeId") Long recipeId) {
         boolean isFavorited = favoriteRecipeService.isRecipeFavorited(email, recipeId);
