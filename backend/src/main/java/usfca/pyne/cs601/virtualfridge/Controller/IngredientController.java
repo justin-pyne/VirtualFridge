@@ -21,16 +21,17 @@ public class IngredientController {
 
     @NotNull
     @GetMapping("/get")
-    public ResponseEntity<List<Ingredient>> getAllIngredients(){
-        List<Ingredient> ingredients = ingredientService.getAllIngredients();
+    public ResponseEntity<List<Ingredient>> getAllIngredients(@RequestParam("email") String email){
+        List<Ingredient> ingredients = ingredientService.getAllIngredients(email);
         return ResponseEntity.ok(ingredients);
     }
 
     @NotNull
     @PostMapping("/add")
-    public ResponseEntity<Ingredient> addOrUpdateIngredient(@RequestBody Ingredient ingredient){
+    public ResponseEntity<Ingredient> addOrUpdateIngredient(@RequestParam("email") String email,
+                                                            @RequestBody Ingredient ingredient) {
 //        if (ingredient != null) {
-            Ingredient addedIngredient = ingredientService.addOrUpdateIngredient(ingredient);
+            Ingredient addedIngredient = ingredientService.addOrUpdateIngredient(email, ingredient);
             return ResponseEntity.ok(addedIngredient);
 //        }
 //        return ResponseEntity.noContent().build();
@@ -38,8 +39,9 @@ public class IngredientController {
 
     @NotNull
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteIngredient(@PathVariable Long id) {
-        ingredientService.removeIngredient(id);
+    public ResponseEntity<Void> deleteIngredient(@RequestParam("email") String email,
+                                                 @PathVariable Long id) {
+        ingredientService.removeIngredient(email, id);
         return ResponseEntity.noContent().build();
     }
 }
