@@ -1,11 +1,11 @@
 package usfca.pyne.cs601.virtualfridge.Service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import usfca.pyne.cs601.virtualfridge.Entity.UserEntity;
-import usfca.pyne.cs601.virtualfridge.Model.User;
+import usfca.pyne.cs601.virtualfridge.Model.*;
 import usfca.pyne.cs601.virtualfridge.Repository.UserRepository;
-import usfca.pyne.cs601.virtualfridge.Model.Fridge;
 
 
 import java.util.List;
@@ -110,4 +110,50 @@ public class UserService implements UserServiceInterface {
         }
     }
 
+    public void updateMacroNutritionalGoals(String email, MacronutrientGoalsDTO goalsDTO) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+        user.setDailyCalorieGoal(goalsDTO.getDailyCalorieGoal());
+        user.setDailyProteinGoal(goalsDTO.getDailyProteinGoal());
+        user.setDailyCarbGoal(goalsDTO.getDailyCarbGoal());
+        user.setDailyFatGoal(goalsDTO.getDailyFatGoal());
+
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public CalorieCalcResultDTO calculateMaintenanceCalories(String email, CalorieCalcDTO calcDTO) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+
+        double bmr = CalorieCalculatorService.calculateBMR(
+                calcDTO.getGender(),
+                calcDTO.getWeightKg(),
+                calcDTO.getHeightCm(),
+                calcDTO.getAge()
+        );
+
+        double maintenanceCalories = CalorieCalculatorService.calculateMaintenanceCalories(bmr, calcDTO.getActivityLevel());
+        double[] macros = CalorieCalculatorService.calculateMacros(maintenanceCalories);
+        double protein = macros[0];
+        double carbs = macros[1];
+        double fat = macros[2];
+
+        user.setDailyCalorieGoal(maintenanceCalories);
+        user.setDailyProteinGoal(protein);
+        user.setDailyCarbGoal(carbs);
+        user.setDailyFatGoal(fat);
+
+        userRepository.save(user);
+
+        CalorieCalcResultDTO resultDTO = new CalorieCalcResultDTO();
+        resultDTO.setMaintenanceCalories(maintenanceCalories);
+        resultDTO.setProtein(protein);
+        resultDTO.setCarbs(carbs);
+        resultDTO.setFat(fat);
+
+        return resultDTO;
+    }
 }
+
+
