@@ -85,6 +85,10 @@ public class UserService implements UserServiceInterface {
         return null;
     }
 
+    public UserEntity getUserEntityByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
     public UserEntity findOrCreateUser(String email, String username, String firstName, String lastName) {
         Optional<UserEntity> userOpt = userRepository.findByEmail(email);
         if (userOpt.isPresent()) {
