@@ -1,6 +1,8 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +22,11 @@ public class Fridge {
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private UserEntity user;
 
     @OneToMany(mappedBy = "fridge", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Ingredient> ingredients;
 
     public Fridge() {}

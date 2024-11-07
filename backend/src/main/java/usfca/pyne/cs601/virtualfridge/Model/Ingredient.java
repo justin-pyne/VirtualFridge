@@ -1,5 +1,6 @@
 package usfca.pyne.cs601.virtualfridge.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,6 +40,7 @@ public class Ingredient {
 
     @ManyToOne
     @JoinColumn(name = "fridge_id", nullable = false)
+    @JsonBackReference
     private Fridge fridge;
 
 

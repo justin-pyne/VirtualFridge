@@ -1,5 +1,6 @@
 package usfca.pyne.cs601.virtualfridge.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,7 @@ public class UserEntity {
     private String email;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private Fridge fridge;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
