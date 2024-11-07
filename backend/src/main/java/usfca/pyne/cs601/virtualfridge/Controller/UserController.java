@@ -3,6 +3,9 @@ package usfca.pyne.cs601.virtualfridge.Controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import usfca.pyne.cs601.virtualfridge.Model.CalorieCalcDTO;
+import usfca.pyne.cs601.virtualfridge.Model.CalorieCalcResultDTO;
+import usfca.pyne.cs601.virtualfridge.Model.MacronutrientGoalsDTO;
 import usfca.pyne.cs601.virtualfridge.Model.User;
 import usfca.pyne.cs601.virtualfridge.Service.UserService;
 
@@ -61,4 +64,20 @@ public class UserController {
         user = userService.updateUser(id, user);
         return ResponseEntity.ok(user);
     }
+
+    @PostMapping("/goals")
+    public ResponseEntity<String> updateMacroNutritionalGoals(@RequestParam("email") String email,
+                                                              @RequestBody MacronutrientGoalsDTO goalsDTO) {
+        userService.updateMacroNutritionalGoals(email, goalsDTO);
+        return ResponseEntity.ok("Goals updated successfully.");
+    }
+
+    @PostMapping("/calculate-calories")
+    public ResponseEntity<CalorieCalcResultDTO> calculateMaintenanceCalories(
+            @RequestParam("email") String email,
+            @RequestBody CalorieCalcDTO calculationDTO) {
+        CalorieCalcResultDTO result = userService.calculateMaintenanceCalories(email, calculationDTO);
+        return ResponseEntity.ok(result);
+    }
+
 }
