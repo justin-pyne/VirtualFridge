@@ -10,6 +10,8 @@ import dev.langchain4j.model.input.structured.StructuredPrompt;
 import dev.langchain4j.model.input.structured.StructuredPromptProcessor;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import usfca.pyne.cs601.virtualfridge.Entity.UserEntity;
+import usfca.pyne.cs601.virtualfridge.Model.Fridge;
 import usfca.pyne.cs601.virtualfridge.Model.Recipe;
 import usfca.pyne.cs601.virtualfridge.Model.Ingredient;
 import usfca.pyne.cs601.virtualfridge.Model.RecipeIngredient;
@@ -31,17 +33,23 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final FavoriteRecipeRepository favoriteRecipeRepository;
     private final ChatLanguageModel chatLanguageModel;
+    private final UserService userService;
 
-
-    public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel) {
+    public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel, UserService userService) {
         this.ingredientRepository = ingredientRepository;
         this.recipeRepository = recipeRepository;
         this.favoriteRecipeRepository = favoriteRecipeRepository;
         this.chatLanguageModel = chatLanguageModel;
+        this.userService = userService;
     }
 
-    public List<Recipe> generateRecipe(){
-        List<Ingredient> fridgeIngredients = ingredientRepository.findAll();
+    public List<Recipe> generateRecipe(String email){
+        UserEntity userEntity = userService.getUserEntityByEmail(email);
+        if (userEntity == null) {
+            throw new IllegalArgumentException("User not found with email: " + email);
+        }
+        Fridge fridge = userEntity.getFridge();
+        List<Ingredient> fridgeIngredients = ingredientRepository.findByFridgeId(fridge.getId());
 
         if (fridgeIngredients.isEmpty()) {
             throw new IllegalStateException("No ingredients available in the fridge.");
@@ -154,30 +162,47 @@ public class RecipeService {
     }
 
     @Transactional
-    public boolean cookRecipe (Long recipeId) {
+    public boolean cookRecipe (String email, Long recipeId) {
+        UserEntity userEntity = userService.getUserEntityByEmail(email);
+        if (userEntity == null) {
+            throw new IllegalArgumentException("User not found with email: " + email);
+        }
+        Fridge fridge = userEntity.getFridge();
+
         Optional<Recipe> recipeOpt = recipeRepository.findById(recipeId);
         if (recipeOpt.isPresent()) {
-            Recipe recipes = recipeOpt.get();
-            for (RecipeIngredient recipeIngredient : recipes.getIngredients()) {
-                String ingredientName = recipeIngredient.getName();
+            Recipe recipe = recipeOpt.get();
+            for (RecipeIngredient recipeIngredient : recipe.getIngredients()) {
+                String ingredientName = recipeIngredient.getName().toLowerCase();
                 double requiredAmount = recipeIngredient.getAmount();
 
-                Optional<Ingredient> optionalFridgeIngredient = ingredientRepository.findByName(ingredientName);
+                Optional<Ingredient> optionalFridgeIngredient = ingredientRepository.findByFridgeIdAndName(fridge.getId(), ingredientName);
                 if (optionalFridgeIngredient.isPresent()) {
-                    boolean deducted = ingredientRepository.deductIngredient(ingredientName.toLowerCase(), requiredAmount);
-                    if (!deducted) {
+                    Ingredient fridgeIngredient = optionalFridgeIngredient.get();
+                    if (fridgeIngredient.getAmount() >= requiredAmount) {
+                        fridgeIngredient.setAmount(fridgeIngredient.getAmount() - requiredAmount);
+                        if (fridgeIngredient.getAmount() <= 0) {
+                            ingredientRepository.delete(fridgeIngredient);
+                        } else {
+                            ingredientRepository.save(fridgeIngredient);
+                        }
+                    } else {
                         return false;
                     }
                 } else {
-                        return false;
-                    }
+                    return false;
                 }
-            return true;
             }
+            return true;
+        }
         return false;
+    }
+
+    public boolean isRecipeFavorited(String email, Long recipeId) {
+        UserEntity userEntity = userService.getUserEntityByEmail(email);
+        if (userEntity == null) {
+            throw new IllegalArgumentException("User not found with email: " + email);
         }
 
-    public boolean isRecipeFavorited(Long recipeId) {
-        return favoriteRecipeRepository.findByRecipeId(recipeId).isPresent();
-    }
+        return favoriteRecipeRepository.findByUserIdAndRecipeId(userEntity.getId(), recipeId).isPresent();    }
 }
