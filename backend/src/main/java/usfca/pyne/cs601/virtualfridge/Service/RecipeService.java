@@ -55,7 +55,12 @@ public class RecipeService {
             throw new IllegalStateException("No ingredients available in the fridge.");
         }
 
-        fridgeIngredients.sort(Comparator.comparing(Ingredient::getExpirationDate));
+        fridgeIngredients.sort(
+                Comparator.comparing(
+                        Ingredient::getExpirationDate,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                )
+        );
 
         List<String> ingredientNames = new ArrayList<>();
         for (Ingredient ingredient : fridgeIngredients){
@@ -106,7 +111,7 @@ public class RecipeService {
 
 
     @StructuredPrompt({
-            "Create {{numberOfRecipes}} recipes that can be prepared using the following ingredients, prioritizing ingredients that are closest to their expiration date: {{ingredients}}.",
+            "Create {{numberOfRecipes}} recipes that can be prepared using the following ingredients, prioritizing ingredients that are closest to their expiration date, if expiration dates are provided: {{ingredients}}.",
             "",
             "You do not need to use all of the ingredients. Do not add ingredients that are not listed. Just generate the best possible recipes.",
             "Return the recipes in JSON format as an array, with the following fields for each recipe:",
