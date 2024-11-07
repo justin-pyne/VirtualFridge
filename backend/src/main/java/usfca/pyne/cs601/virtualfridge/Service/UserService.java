@@ -26,6 +26,9 @@ public class UserService implements UserServiceInterface {
     public User saveUser(User user) {
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(user, userEntity);
+        Fridge fridge = new Fridge();
+        fridge.setUser(userEntity);
+        userEntity.setFridge(fridge);
         userRepository.save(userEntity);
         return user;
     }
