@@ -11,14 +11,12 @@ import dev.langchain4j.model.input.structured.StructuredPromptProcessor;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import usfca.pyne.cs601.virtualfridge.Entity.UserEntity;
-import usfca.pyne.cs601.virtualfridge.Model.Fridge;
-import usfca.pyne.cs601.virtualfridge.Model.Recipe;
-import usfca.pyne.cs601.virtualfridge.Model.Ingredient;
-import usfca.pyne.cs601.virtualfridge.Model.RecipeIngredient;
+import usfca.pyne.cs601.virtualfridge.Model.*;
 import usfca.pyne.cs601.virtualfridge.Repository.FavoriteRecipeRepository;
 import usfca.pyne.cs601.virtualfridge.Repository.IngredientRepository;
 import usfca.pyne.cs601.virtualfridge.Repository.RecipeRepository;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,16 +32,19 @@ public class RecipeService {
     private final FavoriteRecipeRepository favoriteRecipeRepository;
     private final ChatLanguageModel chatLanguageModel;
     private final UserService userService;
+    private final USDAService usdaService;
 
-    public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel, UserService userService) {
+
+    public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel, UserService userService, USDAService usdaService) {
         this.ingredientRepository = ingredientRepository;
         this.recipeRepository = recipeRepository;
         this.favoriteRecipeRepository = favoriteRecipeRepository;
         this.chatLanguageModel = chatLanguageModel;
         this.userService = userService;
+        this.usdaService = usdaService;
     }
 
-    public List<Recipe> generateRecipe(String email){
+    public List<Recipe> generateRecipe(String email) {
         UserEntity userEntity = userService.getUserEntityByEmail(email);
         if (userEntity == null) {
             throw new IllegalArgumentException("User not found with email: " + email);
@@ -63,7 +64,7 @@ public class RecipeService {
         );
 
         List<String> ingredientNames = new ArrayList<>();
-        for (Ingredient ingredient : fridgeIngredients){
+        for (Ingredient ingredient : fridgeIngredients) {
             ingredientNames.add(ingredient.getName());
         }
 
@@ -72,12 +73,14 @@ public class RecipeService {
         createRecipePrompt.numberOfRecipes = 5;
         Prompt prompt = StructuredPromptProcessor.toPrompt(createRecipePrompt);
 
-        try{
+        try {
             System.out.println("Querying the api...");
             AiMessage aiMessage = chatLanguageModel.generate(prompt.toUserMessage()).content();
             String aiString = aiMessage.text();
             List<Recipe> recipes = parseResponseToRecipes(extractJson(aiString));
-
+            for (Recipe recipe : recipes) {
+                computeNutritionalInfo(recipe);
+            }
             recipeRepository.saveAll(recipes);
             return recipes;
         } catch (Exception e) {
@@ -86,10 +89,10 @@ public class RecipeService {
         return null;
     }
 
-    private String extractJson(String response){
+    private String extractJson(String response) {
         int startIndex = response.indexOf('[');
         int endIndex = response.lastIndexOf(']');
-        if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex){
+        if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
             throw new IllegalStateException("No valid JSON array found in the response.");
         }
         return response.substring(startIndex, endIndex + 1).trim();
@@ -97,7 +100,8 @@ public class RecipeService {
 
     private List<Recipe> parseResponseToRecipes(String json) {
         Gson gson = new Gson();
-        Type recipeListType = new TypeToken<List<Recipe>>() {}.getType();
+        Type recipeListType = new TypeToken<List<Recipe>>() {
+        }.getType();
         try {
             List<Recipe> recipes = gson.fromJson(json, recipeListType);
             for (Recipe recipe : recipes) {
@@ -108,13 +112,12 @@ public class RecipeService {
                 }
             }
             return recipes;
-        } catch (JsonSyntaxException e){
+        } catch (JsonSyntaxException e) {
             System.out.println("Failed to parse JSON: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
     }
-
 
 
     @StructuredPrompt({
@@ -163,18 +166,18 @@ public class RecipeService {
             "Do not include markdown, explanations, or comments.",
             "Please return only valid JSON and no additional text."
     })
-    static class CreateRecipePrompt{
+    static class CreateRecipePrompt {
         private List<String> ingredients;
         private int numberOfRecipes;
     }
 
-    public Recipe getRecipeById (Long recipeId) {
+    public Recipe getRecipeById(Long recipeId) {
         return recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found with ID: " + recipeId));
     }
 
     @Transactional
-    public boolean cookRecipe (String email, Long recipeId) {
+    public boolean cookRecipe(String email, Long recipeId) {
         UserEntity userEntity = userService.getUserEntityByEmail(email);
         if (userEntity == null) {
             throw new IllegalArgumentException("User not found with email: " + email);
@@ -216,5 +219,43 @@ public class RecipeService {
             throw new IllegalArgumentException("User not found with email: " + email);
         }
 
-        return favoriteRecipeRepository.findByUserIdAndRecipeId(userEntity.getId(), recipeId).isPresent();    }
+        return favoriteRecipeRepository.findByUserIdAndRecipeId(userEntity.getId(), recipeId).isPresent();
+    }
+
+    private void computeNutritionalInfo(Recipe recipe) {
+        double totalCalories = 0.0;
+        double totalProtein = 0.0;
+        double totalCarbs = 0.0;
+        double totalFat = 0.0;
+
+        if (recipe.getIngredients() != null) {
+            for (RecipeIngredient ingredient : recipe.getIngredients()) {
+                String ingredientName = ingredient.getName();
+                double quantity = ingredient.getAmount();
+                try {
+                    NutritionalInfo info = usdaService.getNutritionalInfo(ingredientName);
+                    ingredient.setCaloriesPer100g(info.getCalories());
+                    ingredient.setProteinPer100g(info.getProtein());
+                    ingredient.setCarbsPer100g(info.getCarbs());
+                    ingredient.setFatPer100g(info.getFat());
+
+                    double factor = quantity / 100.0;
+                    totalCalories += info.getCalories() * factor;
+                    totalProtein += info.getProtein() * factor;
+                    totalCarbs += info.getCarbs() * factor;
+                    totalFat += info.getFat() * factor;
+                } catch(Exception e) {
+                    System.out.println("Error fetching nutritional info for ingredient: " + ingredientName);
+                    ingredient.setCaloriesPer100g(0.0);
+                    ingredient.setProteinPer100g(0.0);
+                    ingredient.setCarbsPer100g(0.0);
+                    ingredient.setFatPer100g(0.0);
+                }
+            }
+        }
+        recipe.setTotalCalories(totalCalories);
+        recipe.setTotalProtein(totalProtein);
+        recipe.setTotalCarbs(totalCarbs);
+        recipe.setTotalFat(totalFat);
+    }
 }
