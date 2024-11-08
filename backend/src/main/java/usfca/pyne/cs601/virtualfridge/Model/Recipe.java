@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-
+@Getter
 @Setter
 @Entity
 @Table(name = "recipes")
@@ -39,6 +39,11 @@ public class Recipe {
     @ElementCollection
     @CollectionTable(name = "recipe_instructions", joinColumns = @JoinColumn(name = "recipe_id"))
     private List<String> instructions;
+
+    private Double totalCalories;
+    private Double totalProtein;
+    private Double totalCarbs;
+    private Double totalFat;
 
 
     public Recipe(){}
