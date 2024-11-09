@@ -32,10 +32,10 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<FavoriteRecipe> favoriteRecipes;
 
-    private Double dailyCalorieGoal;
-    private Double dailyProteinGoal;
-    private Double dailyCarbGoal;
-    private Double dailyFatGoal;
+    private Double dailyCalorieGoal = 0.0;
+    private Double dailyProteinGoal = 0.0;
+    private Double dailyCarbGoal = 0.0;
+    private Double dailyFatGoal = 0.0;
 
     private Double currentCalories = 0.0;
     private Double currentProtein = 0.0;
