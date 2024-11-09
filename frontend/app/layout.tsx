@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import NavBar from "./components/NavBar";
+import NavBar from "../components/NavBar/NavBar";
+import { SessionProvider } from 'next-auth/react'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,8 +31,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}>
-        <NavBar />
-        {children}
+        <SessionProvider>
+          <NavBar />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   )
