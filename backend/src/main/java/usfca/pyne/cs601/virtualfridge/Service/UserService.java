@@ -78,6 +78,10 @@ public class UserService implements UserServiceInterface {
         return user;
     }
 
+    public UserEntity saveUserEntity(UserEntity userEntity) {
+        return userRepository.save(userEntity);
+    }
+
     public User getUserByEmail(String email) {
         UserEntity userEntity = userRepository.findByEmail(email).orElse(null);
         if(userEntity != null) {

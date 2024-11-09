@@ -9,10 +9,13 @@ import dev.langchain4j.model.input.Prompt;
 import dev.langchain4j.model.input.structured.StructuredPrompt;
 import dev.langchain4j.model.input.structured.StructuredPromptProcessor;
 import jakarta.transaction.Transactional;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import usfca.pyne.cs601.virtualfridge.Entity.UserEntity;
 import usfca.pyne.cs601.virtualfridge.Model.*;
 import usfca.pyne.cs601.virtualfridge.Repository.FavoriteRecipeRepository;
+import usfca.pyne.cs601.virtualfridge.Repository.FridgeRepository;
 import usfca.pyne.cs601.virtualfridge.Repository.IngredientRepository;
 import usfca.pyne.cs601.virtualfridge.Repository.RecipeRepository;
 
@@ -33,26 +36,31 @@ public class RecipeService {
     private final ChatLanguageModel chatLanguageModel;
     private final UserService userService;
     private final USDAService usdaService;
+    private static final Logger logger = LoggerFactory.getLogger(RecipeService.class);
+    private final FridgeRepository fridgeRepository;
 
 
-    public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel, UserService userService, USDAService usdaService) {
+    public RecipeService(IngredientRepository ingredientRepository, RecipeRepository recipeRepository, FavoriteRecipeRepository favoriteRecipeRepository, ChatLanguageModel chatLanguageModel, UserService userService, USDAService usdaService, FridgeRepository fridgeRepository) {
         this.ingredientRepository = ingredientRepository;
         this.recipeRepository = recipeRepository;
         this.favoriteRecipeRepository = favoriteRecipeRepository;
         this.chatLanguageModel = chatLanguageModel;
         this.userService = userService;
         this.usdaService = usdaService;
+        this.fridgeRepository = fridgeRepository;
     }
 
     public List<Recipe> generateRecipe(String email) {
         UserEntity userEntity = userService.getUserEntityByEmail(email);
         if (userEntity == null) {
+            logger.error("User not found with email: " + email);
             throw new IllegalArgumentException("User not found with email: " + email);
         }
         Fridge fridge = userEntity.getFridge();
         List<Ingredient> fridgeIngredients = ingredientRepository.findByFridgeId(fridge.getId());
 
         if (fridgeIngredients.isEmpty()) {
+            logger.error("No ingredients available in the fridge.");
             throw new IllegalStateException("No ingredients available in the fridge.");
         }
 
@@ -74,7 +82,8 @@ public class RecipeService {
         Prompt prompt = StructuredPromptProcessor.toPrompt(createRecipePrompt);
 
         try {
-            System.out.println("Querying the api...");
+            logger.info("Querying OpenAi API to generate recipes...");
+//            System.out.println("Querying the api...");
             AiMessage aiMessage = chatLanguageModel.generate(prompt.toUserMessage()).content();
             String aiString = aiMessage.text();
             List<Recipe> recipes = parseResponseToRecipes(extractJson(aiString));
@@ -82,9 +91,10 @@ public class RecipeService {
                 computeNutritionalInfo(recipe);
             }
             recipeRepository.saveAll(recipes);
+            logger.info("Successfully generated {} recipes for user: {}", recipes.size(), email);
             return recipes;
         } catch (Exception e) {
-            System.out.println(e);
+            logger.error("Error generating recipes for user: {}", email, e);
         }
         return null;
     }
@@ -93,6 +103,7 @@ public class RecipeService {
         int startIndex = response.indexOf('[');
         int endIndex = response.lastIndexOf(']');
         if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
+            logger.error("No valid JSON array found in the response.");
             throw new IllegalStateException("No valid JSON array found in the response.");
         }
         return response.substring(startIndex, endIndex + 1).trim();
@@ -113,8 +124,7 @@ public class RecipeService {
             }
             return recipes;
         } catch (JsonSyntaxException e) {
-            System.out.println("Failed to parse JSON: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to parse JSON: " + e.getMessage());
         }
         return null;
     }
@@ -187,6 +197,7 @@ public class RecipeService {
         Optional<Recipe> recipeOpt = recipeRepository.findById(recipeId);
         if (recipeOpt.isPresent()) {
             Recipe recipe = recipeOpt.get();
+            boolean canCook = true;
             for (RecipeIngredient recipeIngredient : recipe.getIngredients()) {
                 String ingredientName = recipeIngredient.getName().toLowerCase();
                 double requiredAmount = recipeIngredient.getAmount();
@@ -194,22 +205,55 @@ public class RecipeService {
                 Optional<Ingredient> optionalFridgeIngredient = ingredientRepository.findByFridgeIdAndName(fridge.getId(), ingredientName);
                 if (optionalFridgeIngredient.isPresent()) {
                     Ingredient fridgeIngredient = optionalFridgeIngredient.get();
-                    if (fridgeIngredient.getAmount() >= requiredAmount) {
-                        fridgeIngredient.setAmount(fridgeIngredient.getAmount() - requiredAmount);
-                        if (fridgeIngredient.getAmount() <= 0) {
-                            ingredientRepository.delete(fridgeIngredient);
-                        } else {
-                            ingredientRepository.save(fridgeIngredient);
-                        }
-                    } else {
-                        return false;
+                    if (fridgeIngredient.getAmount() < requiredAmount) {
+                        canCook = false;
+                        break;
                     }
                 } else {
-                    return false;
+                    canCook = false;
+                    break;
                 }
             }
+
+            if (!canCook) {
+                logger.warn("Insufficient ingredients to cook recipe ID: {}", recipeId);
+                return false;
+            }
+
+            for (RecipeIngredient recipeIngredient : recipe.getIngredients()) {
+                String ingredientName = recipeIngredient.getName().toLowerCase();
+                double requiredAmount = recipeIngredient.getAmount();
+
+                Optional<Ingredient> optionalFridgeIngredient = ingredientRepository.findByFridgeIdAndName(fridge.getId(), ingredientName);
+                if (optionalFridgeIngredient.isPresent()){
+                    Ingredient fridgeIngredient = optionalFridgeIngredient.get();
+                    fridgeIngredient.setAmount(fridgeIngredient.getAmount() - requiredAmount);
+                    if (fridgeIngredient.getAmount() <= 0) {
+                        ingredientRepository.delete(fridgeIngredient);
+                        logger.info("Removed ingredient '{}' from fridge as its quantity reached zero.", ingredientName);
+                    } else {
+                        ingredientRepository.save(fridgeIngredient);
+                        logger.info("Updated ingredient '{}' amount to {}.", ingredientName, fridgeIngredient.getAmount());
+                    }
+                }
+            }
+
+            userEntity.setCurrentCalories(userEntity.getCurrentCalories() + (recipe.getTotalCalories() != null ? recipe.getTotalCalories() : 0.0));
+            userEntity.setCurrentProtein(userEntity.getCurrentProtein() + (recipe.getTotalProtein() != null ? recipe.getTotalProtein() : 0.0));
+            userEntity.setCurrentCarbs(userEntity.getCurrentCarbs() + (recipe.getTotalCarbs() != null ? recipe.getTotalCarbs() : 0.0));
+            userEntity.setCurrentFat(userEntity.getCurrentFat() + (recipe.getTotalFat() != null ? recipe.getTotalFat() : 0.0));
+
+            userService.saveUserEntity(userEntity);
+            logger.info("Updated nutritional consumption for user: {}. New totals - Calories: {}, Protein: {}, Carbs: {}, Fat: {}",
+                    email,
+                    userEntity.getCurrentCalories(),
+                    userEntity.getCurrentProtein(),
+                    userEntity.getCurrentCarbs(),
+                    userEntity.getCurrentFat());
+
             return true;
         }
+        logger.warn("Recipe not found with ID: {}", recipeId);
         return false;
     }
 
@@ -245,7 +289,7 @@ public class RecipeService {
                     totalCarbs += info.getCarbs() * factor;
                     totalFat += info.getFat() * factor;
                 } catch(Exception e) {
-                    System.out.println("Error fetching nutritional info for ingredient: " + ingredientName);
+                    logger.error("Error fetching nutritional info for ingredient: " + ingredientName);
                     ingredient.setCaloriesPer100g(0.0);
                     ingredient.setProteinPer100g(0.0);
                     ingredient.setCarbsPer100g(0.0);
