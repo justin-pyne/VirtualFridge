@@ -1,8 +1,10 @@
 package usfca.pyne.cs601.virtualfridge.Controller;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import usfca.pyne.cs601.virtualfridge.Entity.UserEntity;
 import usfca.pyne.cs601.virtualfridge.Model.*;
 import usfca.pyne.cs601.virtualfridge.Service.UserService;
 
@@ -38,6 +40,7 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @GetMapping("/exists")
     public ResponseEntity<User> getUserByEmail(@PathVariable("email") String email) {
         User user = userService.getUserByEmail(email);
         if (user != null) {
@@ -85,5 +88,14 @@ public class UserController {
         } catch(IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
         }
+    }
+
+
+    @PostMapping("/findOrCreate")
+    public ResponseEntity<User> findOrCreateUser(@RequestBody User user) {
+        UserEntity foundOrCreatedUser = userService.findOrCreateUser(user.getEmail(), user.getUsername(), user.getFirstName(), user.getLastName());
+        User responseUser = new User();
+        BeanUtils.copyProperties(foundOrCreatedUser, responseUser);
+        return ResponseEntity.ok(responseUser);
     }
 }
