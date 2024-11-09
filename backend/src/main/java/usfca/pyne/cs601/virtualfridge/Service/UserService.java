@@ -165,39 +165,32 @@ public class UserService implements UserServiceInterface {
 
         MacrosDTO dto = new MacrosDTO();
 
-        dto.setDailyCalorieGoal(userEntity.getDailyCalorieGoal());
-        dto.setDailyProteinGoal(userEntity.getDailyProteinGoal());
-        dto.setDailyCarbsGoal(userEntity.getDailyCarbGoal());
-        dto.setDailyFatGoal(userEntity.getDailyFatGoal());
+        dto.setDailyCalorieGoal(userEntity.getDailyCalorieGoal() != null ? userEntity.getDailyCalorieGoal() : 0.0);
+        dto.setDailyProteinGoal(userEntity.getDailyProteinGoal() != null ? userEntity.getDailyProteinGoal() : 0.0);
+        dto.setDailyCarbsGoal(userEntity.getDailyCarbGoal() != null ? userEntity.getDailyCarbGoal() : 0.0);
+        dto.setDailyFatGoal(userEntity.getDailyFatGoal() != null ? userEntity.getDailyFatGoal() : 0.0);
 
-        dto.setCurrentCalories(userEntity.getCurrentCalories());
-        dto.setCurrentProtein(userEntity.getCurrentProtein());
-        dto.setCurrentCarbs(userEntity.getCurrentCarbs());
-        dto.setCurrentFat(userEntity.getCurrentFat());
+        dto.setCurrentCalories(userEntity.getCurrentCalories() != null ? userEntity.getCurrentCalories() : 0.0);
+        dto.setCurrentProtein(userEntity.getCurrentProtein() != null ? userEntity.getCurrentProtein() : 0.0);
+        dto.setCurrentCarbs(userEntity.getCurrentCarbs() != null ? userEntity.getCurrentCarbs() : 0.0);
+        dto.setCurrentFat(userEntity.getCurrentFat() != null ? userEntity.getCurrentFat() : 0.0);
 
-        dto.setRemainingCalories(Math.max(0, userEntity.getDailyCalorieGoal() > 0 ?
-                userEntity.getDailyCalorieGoal() - userEntity.getCurrentCalories() : 0));
-
-        dto.setRemainingProtein(Math.max(0, userEntity.getDailyProteinGoal() > 0 ?
-                userEntity.getDailyProteinGoal() - userEntity.getCurrentProtein() : 0));
-
-        dto.setRemainingCarbs(Math.max(0, userEntity.getDailyCarbGoal() > 0 ?
-                userEntity.getDailyCarbGoal() - userEntity.getCurrentCarbs() : 0));
-
-        dto.setRemainingFat(Math.max(0, userEntity.getDailyFatGoal() > 0 ?
-                userEntity.getDailyFatGoal() - userEntity.getCurrentFat() : 0));
+        dto.setRemainingCalories(Math.max(0, dto.getDailyCalorieGoal() - dto.getCurrentCalories()));
+        dto.setRemainingProtein(Math.max(0, dto.getDailyProteinGoal() - dto.getCurrentProtein()));
+        dto.setRemainingCarbs(Math.max(0, dto.getDailyCarbsGoal() - dto.getCurrentCarbs()));
+        dto.setRemainingFat(Math.max(0, dto.getDailyFatGoal() - dto.getCurrentFat()));
 
 
-        if (userEntity.getDailyCalorieGoal() == 0) {
+        if (dto.getDailyCalorieGoal() == 0) {
             dto.setRemainingCalories(0);
         }
-        if (userEntity.getDailyProteinGoal() == 0) {
+        if (dto.getDailyProteinGoal() == 0) {
             dto.setRemainingProtein(0);
         }
-        if (userEntity.getDailyCarbGoal() == 0) {
+        if (dto.getDailyCarbsGoal() == 0) {
             dto.setRemainingCarbs(0);
         }
-        if (userEntity.getDailyFatGoal() == 0) {
+        if (dto.getDailyFatGoal() == 0) {
             dto.setRemainingFat(0);
         }
 
