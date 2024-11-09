@@ -1,8 +1,6 @@
-'use client'
+import RecipeClientComponent from '../../components/RecipeClientComponent/RecipeClientComponent';
 
-import RecipeClientComponent from '../components/RecipeClientComponent';
-
-export default function RecipePage() {
+export default async function RecipePage() {
     return (
         <div>
             <RecipeClientComponent />
