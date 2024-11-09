@@ -237,6 +237,18 @@ public class RecipeService {
                     }
                 }
             }
+            if (userEntity.getCurrentCalories() == null) {
+                userEntity.setCurrentCalories(0.0);
+            }
+            if (userEntity.getCurrentProtein() == null) {
+                userEntity.setCurrentProtein(0.0);
+            }
+            if (userEntity.getCurrentCarbs() == null) {
+                userEntity.setCurrentCarbs(0.0);
+            }
+            if (userEntity.getCurrentFat() == null) {
+                userEntity.setCurrentFat(0.0);
+            }
 
             userEntity.setCurrentCalories(userEntity.getCurrentCalories() + (recipe.getTotalCalories() != null ? recipe.getTotalCalories() : 0.0));
             userEntity.setCurrentProtein(userEntity.getCurrentProtein() + (recipe.getTotalProtein() != null ? recipe.getTotalProtein() : 0.0));
