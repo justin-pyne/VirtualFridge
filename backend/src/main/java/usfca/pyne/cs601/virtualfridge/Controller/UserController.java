@@ -3,10 +3,7 @@ package usfca.pyne.cs601.virtualfridge.Controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import usfca.pyne.cs601.virtualfridge.Model.CalorieCalcDTO;
-import usfca.pyne.cs601.virtualfridge.Model.CalorieCalcResultDTO;
-import usfca.pyne.cs601.virtualfridge.Model.MacronutrientGoalsDTO;
-import usfca.pyne.cs601.virtualfridge.Model.User;
+import usfca.pyne.cs601.virtualfridge.Model.*;
 import usfca.pyne.cs601.virtualfridge.Service.UserService;
 
 import java.util.HashMap;
@@ -80,4 +77,13 @@ public class UserController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/macros")
+    public ResponseEntity<MacrosDTO> getUserMacros(@RequestParam("email") String email) {
+        try {
+            MacrosDTO userMacros = userService.getUserMacros(email);
+            return ResponseEntity.ok(userMacros);
+        } catch(IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
 }

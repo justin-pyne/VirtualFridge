@@ -158,6 +158,51 @@ public class UserService implements UserServiceInterface {
 
         return resultDTO;
     }
+
+    public MacrosDTO getUserMacros(String email) {
+        UserEntity userEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+
+        MacrosDTO dto = new MacrosDTO();
+
+        dto.setDailyCalorieGoal(userEntity.getDailyCalorieGoal());
+        dto.setDailyProteinGoal(userEntity.getDailyProteinGoal());
+        dto.setDailyCarbsGoal(userEntity.getDailyCarbGoal());
+        dto.setDailyFatGoal(userEntity.getDailyFatGoal());
+
+        dto.setCurrentCalories(userEntity.getCurrentCalories());
+        dto.setCurrentProtein(userEntity.getCurrentProtein());
+        dto.setCurrentCarbs(userEntity.getCurrentCarbs());
+        dto.setCurrentFat(userEntity.getCurrentFat());
+
+        dto.setRemainingCalories(Math.max(0, userEntity.getDailyCalorieGoal() > 0 ?
+                userEntity.getDailyCalorieGoal() - userEntity.getCurrentCalories() : 0));
+
+        dto.setRemainingProtein(Math.max(0, userEntity.getDailyProteinGoal() > 0 ?
+                userEntity.getDailyProteinGoal() - userEntity.getCurrentProtein() : 0));
+
+        dto.setRemainingCarbs(Math.max(0, userEntity.getDailyCarbGoal() > 0 ?
+                userEntity.getDailyCarbGoal() - userEntity.getCurrentCarbs() : 0));
+
+        dto.setRemainingFat(Math.max(0, userEntity.getDailyFatGoal() > 0 ?
+                userEntity.getDailyFatGoal() - userEntity.getCurrentFat() : 0));
+
+
+        if (userEntity.getDailyCalorieGoal() == 0) {
+            dto.setRemainingCalories(0);
+        }
+        if (userEntity.getDailyProteinGoal() == 0) {
+            dto.setRemainingProtein(0);
+        }
+        if (userEntity.getDailyCarbGoal() == 0) {
+            dto.setRemainingCarbs(0);
+        }
+        if (userEntity.getDailyFatGoal() == 0) {
+            dto.setRemainingFat(0);
+        }
+
+        return dto;
+    }
 }
 
 
